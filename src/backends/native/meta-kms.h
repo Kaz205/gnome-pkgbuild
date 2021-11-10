@@ -39,8 +39,14 @@ void meta_kms_discard_pending_updates (MetaKms *kms);
 MetaKmsUpdate * meta_kms_ensure_pending_update (MetaKms       *kms,
                                                 MetaKmsDevice *device);
 
+MetaKmsUpdate * meta_kms_ensure_pending_update_for_crtc (MetaKms     *kms,
+                                                         MetaKmsCrtc *crtc);
+
 MetaKmsUpdate * meta_kms_get_pending_update (MetaKms       *kms,
                                              MetaKmsDevice *device);
+
+MetaKmsUpdate * meta_kms_get_pending_update_for_crtc (MetaKms     *kms,
+                                                      MetaKmsCrtc *crtc);
 
 MetaKmsFeedback * meta_kms_post_pending_update_sync (MetaKms           *kms,
                                                      MetaKmsDevice     *device,
@@ -48,6 +54,10 @@ MetaKmsFeedback * meta_kms_post_pending_update_sync (MetaKms           *kms,
 
 MetaKmsFeedback * meta_kms_post_test_update_sync (MetaKms       *kms,
                                                   MetaKmsUpdate *update);
+
+MetaKmsFeedback * meta_kms_post_pending_update_for_crtc_sync (MetaKms           *kms,
+                                                              MetaKmsCrtc       *device,
+                                                              MetaKmsUpdateFlag  flags);
 
 void meta_kms_discard_pending_page_flips (MetaKms *kms);
 
