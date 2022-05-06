@@ -211,7 +211,6 @@ meta_crtc_kms_maybe_set_gamma (MetaCrtcKms   *crtc_kms,
   MetaMonitorManagerNative *monitor_manager_native =
     META_MONITOR_MANAGER_NATIVE (monitor_manager);
   MetaKms *kms = meta_kms_device_get_kms (kms_device);
-  MetaKmsCrtc *kms_crtc = meta_crtc_kms_get_kms_crtc (crtc_kms);
   MetaKmsUpdate *kms_update;
   MetaKmsCrtcGamma *gamma;
   MetaKmsCrtc *kms_crtc = meta_crtc_kms_get_kms_crtc (crtc_kms);
