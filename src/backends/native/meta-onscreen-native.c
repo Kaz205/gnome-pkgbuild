@@ -1060,6 +1060,7 @@ meta_onscreen_native_swap_buffers_with_damage (CoglOnscreen  *onscreen,
   COGL_TRACE_BEGIN_SCOPED (MetaRendererNativeSwapBuffers,
                            "Onscreen (swap-buffers)");
 
+#ifdef WITH_VERBOSE_MODE
   if (meta_is_topic_enabled (META_DEBUG_KMS))
     {
       unsigned int frames_pending =
@@ -1072,6 +1073,7 @@ meta_onscreen_native_swap_buffers_with_damage (CoglOnscreen  *onscreen,
                   frames_pending == 2 ? "triple" :
                   "?");
     }
+#endif
 
   secondary_gpu_fb =
     update_secondary_gpu_state_pre_swap_buffers (onscreen,
