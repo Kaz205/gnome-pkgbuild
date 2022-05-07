@@ -16,9 +16,8 @@ depends=(dconf gobject-introspection-runtime gsettings-desktop-schemas
          xorg-xwayland graphene libxkbfile libsysprof-capture)
 makedepends=(gobject-introspection git egl-wayland meson xorg-server
              wayland-protocols sysprof)
-source=(
-  "$_srcname::git+https://github.com/Kaz205/mutter#gnome-42.1"
-)
+_commit=94bd385bf3ece2a746d8755049fc1fa5c8c0a808  # tags/42.1^0
+source=("git+https://gitlab.gnome.org/GNOME/mutter.git#commit=$_commit")
 sha256sums=('SKIP')
 
 pkgver() {
@@ -28,6 +27,13 @@ pkgver() {
 
 prepare() {
   cd mutter
+
+  # Dynamic triple buffering
+  wget https://github.com/Kaz205/mutter/commit/8e3ecf6a5c4e0e55d97e1e242433eb304e043bd6.patch
+  wget https://github.com/Kaz205/mutter/commit/55d6924860a6aaa68bcb0eaa607f42098c83f0bc.patch
+  git reset --hard
+  git am 8e3ecf6a5c4e0e55d97e1e242433eb304e043bd6.patch
+  git am 55d6924860a6aaa68bcb0eaa607f42098c83f0bc.patch
 }
 
 build() {
