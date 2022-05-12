@@ -34,6 +34,12 @@ prepare() {
   git reset --hard
   git am 8e3ecf6a5c4e0e55d97e1e242433eb304e043bd6.patch
   git am 55d6924860a6aaa68bcb0eaa607f42098c83f0bc.patch
+
+  # Fix compilation when debugging is off
+  wget https://github.com/Kaz205/mutter/commit/f12ac2c3beaf467b757e1a267277ce3a481a39c1.patch
+  wget https://github.com/Kaz205/mutter/commit/a2bf2020e9d6b5ecfa9824eedf981c0b172c7c60.patch
+  git am f12ac2c3beaf467b757e1a267277ce3a481a39c1.patch
+  git am a2bf2020e9d6b5ecfa9824eedf981c0b172c7c60.patch
 }
 
 build() {
@@ -43,7 +49,11 @@ build() {
   arch-meson mutter build \
     -D egl_device=true \
     -D wayland_eglstream=true \
-    -D installed_tests=false
+    -D installed_tests=false \
+    -D profiler=false \
+    -D tests=false \
+    -D installed_tests=false \
+    -D verbose=false
   meson compile -C build
 }
 
