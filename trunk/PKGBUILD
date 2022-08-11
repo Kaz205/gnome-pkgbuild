@@ -4,7 +4,7 @@
 
 pkgbase=mutter
 pkgname=(mutter)
-pkgver=42.1
+pkgver=42.4+r2+gf3343a021
 pkgrel=1
 pkgdesc="A window manager for GNOME"
 url="https://gitlab.gnome.org/GNOME/mutter"
@@ -16,7 +16,7 @@ depends=(dconf gobject-introspection-runtime gsettings-desktop-schemas
          xorg-xwayland graphene libxkbfile libsysprof-capture)
 makedepends=(gobject-introspection git egl-wayland meson xorg-server
              wayland-protocols sysprof)
-_commit=94bd385bf3ece2a746d8755049fc1fa5c8c0a808  # tags/42.1^0
+_commit=9a25838e4e3f705b69b7f2e0bf22e970d8829f1f  # tags/42.4^0
 source=("git+https://gitlab.gnome.org/GNOME/mutter.git#commit=$_commit")
 sha256sums=('SKIP')
 
@@ -29,17 +29,13 @@ prepare() {
   cd mutter
 
   # Dynamic triple buffering
-  wget https://github.com/Kaz205/mutter/commit/8e3ecf6a5c4e0e55d97e1e242433eb304e043bd6.patch
-  wget https://github.com/Kaz205/mutter/commit/55d6924860a6aaa68bcb0eaa607f42098c83f0bc.patch
+  wget https://github.com/Kaz205/mutter/commit/bb0ddcd4f8686bd421cae84ed48e74ca2c12a71f.patch
   git reset --hard
-  git am 8e3ecf6a5c4e0e55d97e1e242433eb304e043bd6.patch
-  git am 55d6924860a6aaa68bcb0eaa607f42098c83f0bc.patch
+  git am bb0ddcd4f8686bd421cae84ed48e74ca2c12a71f.patch
 
   # Fix compilation when debugging is off
-  wget https://github.com/Kaz205/mutter/commit/f12ac2c3beaf467b757e1a267277ce3a481a39c1.patch
-  wget https://github.com/Kaz205/mutter/commit/a2bf2020e9d6b5ecfa9824eedf981c0b172c7c60.patch
-  git am f12ac2c3beaf467b757e1a267277ce3a481a39c1.patch
-  git am a2bf2020e9d6b5ecfa9824eedf981c0b172c7c60.patch
+  wget https://github.com/Kaz205/mutter/commit/f046134529c015f0720c280477ce7cfe1821c8af.patch
+  git am f046134529c015f0720c280477ce7cfe1821c8af.patch
 }
 
 build() {
