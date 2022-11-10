@@ -4,19 +4,20 @@
 
 pkgbase=mutter
 pkgname=(mutter)
-pkgver=42.5+r2+ge8df7ec0a
+pkgver=43.1+r3+gca9cc2b8b
 pkgrel=1
 pkgdesc="A window manager for GNOME"
 url="https://gitlab.gnome.org/GNOME/mutter"
 arch=(x86_64)
 license=(GPL)
 depends=(dconf gobject-introspection-runtime gsettings-desktop-schemas
-         libcanberra startup-notification zenity libsm gnome-desktop 
-         libxkbcommon-x11 gnome-settings-daemon libgudev libinput pipewire
-         xorg-xwayland graphene libxkbfile libsysprof-capture)
+         libcanberra startup-notification libsm gnome-desktop libxkbcommon-x11
+         gnome-settings-daemon libgudev libinput pipewire xorg-xwayland graphene
+         libxkbfile libsysprof-capture lcms2 colord)
 makedepends=(gobject-introspection git egl-wayland meson xorg-server
              wayland-protocols sysprof)
-_commit=4b35c269c7ad2515f91d2d3ccaea7526e0cb5f97  # tags/42.5^0
+checkdepends=(xorg-server-xvfb wireplumber python-dbusmock zenity)
+_commit=8329a3eb5f4960df919e0348bd445c40568d3d60  # tags/43.1^0
 source=("git+https://gitlab.gnome.org/GNOME/mutter.git#commit=$_commit")
 sha256sums=('SKIP')
 
@@ -28,14 +29,17 @@ pkgver() {
 prepare() {
   cd mutter
 
-  # Dynamic triple buffering
-  wget https://github.com/Kaz205/mutter/commit/dbf4a2f1f85b5dd5ad2e599f2e5f5eba7d9e10a2.patch
+  wget https://github.com/Kaz205/mutter/commit/7c80fb668827e00db049411d00c56339cc89c515.patch
   git reset --hard
-  git am dbf4a2f1f85b5dd5ad2e599f2e5f5eba7d9e10a2.patch
+  git am 7c80fb668827e00db049411d00c56339cc89c515.patch
+
+  # Dynamic triple buffering
+  wget https://github.com/Kaz205/mutter/commit/ec39c99e57646e179aeda3f0555e1a0c6b7e0f71.patch
+  git am ec39c99e57646e179aeda3f0555e1a0c6b7e0f71.patch
 
   # Fix compilation when debugging is off
-  wget https://github.com/Kaz205/mutter/commit/1de6e293fd7d4c24b1dc36da8d72851fbb60b202.patch
-  git am 1de6e293fd7d4c24b1dc36da8d72851fbb60b202.patch
+  wget https://github.com/Kaz205/mutter/commit/bab799797a07b65818d7ee8f8599692013013753.patch
+  git am bab799797a07b65818d7ee8f8599692013013753.patch
 }
 
 build() {
@@ -54,7 +58,7 @@ build() {
 }
 
 package_mutter() {
-  provides=(libmutter-10.so)
+  provides=(libmutter-11.so)
   groups=(gnome)
 
   meson install -C build --destdir "$pkgdir"
