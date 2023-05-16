@@ -3,63 +3,76 @@
 # Contributor: Michael Kanis <mkanis_at_gmx_dot_de>
 
 pkgbase=mutter
-pkgname=(mutter)
-pkgver=43.1+r3+gca9cc2b8b
+pkgname=(
+  mutter
+)
+pkgver=44.1
 pkgrel=1
-pkgdesc="A window manager for GNOME"
+pkgdesc="Window manager and compositor for GNOME"
 url="https://gitlab.gnome.org/GNOME/mutter"
-arch=(x86_64)
+arch=(aarch64 x86_64)
 license=(GPL)
-depends=(dconf gobject-introspection-runtime gsettings-desktop-schemas
-         libcanberra startup-notification libsm gnome-desktop libxkbcommon-x11
-         gnome-settings-daemon libgudev libinput pipewire xorg-xwayland graphene
-         libxkbfile libsysprof-capture lcms2 colord)
-makedepends=(gobject-introspection git egl-wayland meson xorg-server
-             wayland-protocols sysprof)
-checkdepends=(xorg-server-xvfb wireplumber python-dbusmock zenity)
-_commit=8329a3eb5f4960df919e0348bd445c40568d3d60  # tags/43.1^0
-source=("git+https://gitlab.gnome.org/GNOME/mutter.git#commit=$_commit")
-sha256sums=('SKIP')
-
-pkgver() {
-  cd mutter
-  git describe --tags | sed 's/[^-]*-g/r&/;s/-/+/g'
-}
+depends=(
+  colord
+  dconf
+  gnome-desktop-4
+  gnome-settings-daemon
+  graphene
+  gsettings-desktop-schemas
+  lcms2
+  libcanberra
+  libgudev
+  libinput
+  libsm
+  libsysprof-capture
+  libxkbcommon-x11
+  libxkbfile
+  pipewire
+  startup-notification
+  xorg-xwayland
+)
+makedepends=(
+  egl-wayland
+  git
+  gobject-introspection
+  gtk3
+  meson
+  sysprof
+  wayland-protocols
+  xorg-server
+  xorg-server-xvfb
+)
+checkdepends=(
+  python-dbusmock
+  wireplumber
+  zenity
+)
+source=("git+https://github.com/Kaz205/mutter.git#branch=gnome-44")
+b2sums=('SKIP')
 
 prepare() {
   cd mutter
-
-  wget https://github.com/Kaz205/mutter/commit/7c80fb668827e00db049411d00c56339cc89c515.patch
-  git reset --hard
-  git am 7c80fb668827e00db049411d00c56339cc89c515.patch
-
-  # Dynamic triple buffering
-  wget https://github.com/Kaz205/mutter/commit/ec39c99e57646e179aeda3f0555e1a0c6b7e0f71.patch
-  git am ec39c99e57646e179aeda3f0555e1a0c6b7e0f71.patch
-
-  # Fix compilation when debugging is off
-  wget https://github.com/Kaz205/mutter/commit/bab799797a07b65818d7ee8f8599692013013753.patch
-  git am bab799797a07b65818d7ee8f8599692013013753.patch
 }
 
 build() {
-  CFLAGS="-O3 -fno-semantic-interposition"
+  local meson_options=(
+    -D egl_device=true
+    -D installed_tests=false
+    -D wayland_eglstream=true
+    -D profiler=false
+    -D tests=false
+#    -D verbose=false
+  )
+
+  CFLAGS="${CFLAGS/-O2/-O3} -fno-semantic-interposition"
   LDFLAGS+=" -Wl,-Bsymbolic-functions"
 
-  arch-meson mutter build \
-    -D egl_device=true \
-    -D wayland_eglstream=true \
-    -D installed_tests=false \
-    -D profiler=false \
-    -D tests=false \
-    -D installed_tests=false \
-    -D verbose=false
+  arch-meson mutter build "${meson_options[@]}"
   meson compile -C build
 }
 
 package_mutter() {
-  provides=(libmutter-11.so)
-  groups=(gnome)
+  provides=(libmutter-12.so)
 
   meson install -C build --destdir "$pkgdir"
 }
