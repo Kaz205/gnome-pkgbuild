@@ -1,17 +1,17 @@
-From 692546a9701a7b363e6190af441a95385c244907 Mon Sep 17 00:00:00 2001
+From 03242d20a2a0ab24182de4b27081e2774c0b2626 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
 Date: Fri, 2 Dec 2022 22:49:41 +0100
-Subject: [PATCH] place: Always center initial-setup/fedora-welcome
+Subject: [PATCH 04/13] place: Always center initial-setup/fedora-welcome
 
 ---
  src/core/place.c | 5 +++++
  1 file changed, 5 insertions(+)
 
 diff --git a/src/core/place.c b/src/core/place.c
-index f9877dfc7..a69a3ebd1 100644
+index 6eae1a9a7..004889dec 100644
 --- a/src/core/place.c
 +++ b/src/core/place.c
-@@ -321,6 +321,11 @@ window_place_centered (MetaWindow *window)
+@@ -377,6 +377,11 @@ window_place_centered (MetaWindow *window)
  
    type = window->type;
  
@@ -24,5 +24,5 @@ index f9877dfc7..a69a3ebd1 100644
      type == META_WINDOW_MODAL_DIALOG ||
      type == META_WINDOW_SPLASHSCREEN ||
 -- 
-2.39.2
+2.41.0
 

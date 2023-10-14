@@ -1,7 +1,7 @@
-From 2184adca1e510361fd1c425d88ac9a3d458eb76a Mon Sep 17 00:00:00 2001
+From e8f4812701912bf9fa3977f59e11be47d23aefb9 Mon Sep 17 00:00:00 2001
 From: David King <amigadave@amigadave.com>
 Date: Fri, 14 Jan 2022 18:18:03 +0000
-Subject: [PATCH] Disable KMS on tegra
+Subject: [PATCH 13/13] Disable KMS on tegra
 
 Based on commit 77a40614f08ef10044409f689b9efc3d5f65ff0c.
 ---
@@ -9,10 +9,10 @@ Based on commit 77a40614f08ef10044409f689b9efc3d5f65ff0c.
  1 file changed, 1 insertion(+)
 
 diff --git a/src/backends/native/meta-kms-impl-device-atomic.c b/src/backends/native/meta-kms-impl-device-atomic.c
-index bcb41e8ad..bafbc7b8f 100644
+index e7497607b..fc17a195c 100644
 --- a/src/backends/native/meta-kms-impl-device-atomic.c
 +++ b/src/backends/native/meta-kms-impl-device-atomic.c
-@@ -1216,6 +1216,7 @@ is_atomic_allowed (const char *driver_name)
+@@ -1229,6 +1229,7 @@ is_atomic_allowed (const char *driver_name)
      "vboxvideo",
      "virtio_gpu",
      "xlnx",
@@ -21,5 +21,5 @@ index bcb41e8ad..bafbc7b8f 100644
    };
  
 -- 
-2.34.1
+2.41.0
 

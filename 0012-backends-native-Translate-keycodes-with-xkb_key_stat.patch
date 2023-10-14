@@ -1,7 +1,7 @@
-From 6fe1b3145f840d39240046c0812b1406d23fe569 Mon Sep 17 00:00:00 2001
+From d46f65860987b2b13a337b8ea59a432cc228120b Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlosg@gnome.org>
 Date: Fri, 29 Sep 2023 13:14:14 +0200
-Subject: [PATCH] backends/native: Translate keycodes with
+Subject: [PATCH 12/13] backends/native: Translate keycodes with
  xkb_key_state_get_one_sym()
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -36,7 +36,7 @@ Part-of: <https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/3306>
  1 file changed, 1 insertion(+), 6 deletions(-)
 
 diff --git a/src/backends/native/meta-xkb-utils.c b/src/backends/native/meta-xkb-utils.c
-index 1ec12a37bea..7f80cca2e2a 100644
+index 1ec12a37b..7f80cca2e 100644
 --- a/src/backends/native/meta-xkb-utils.c
 +++ b/src/backends/native/meta-xkb-utils.c
 @@ -50,7 +50,6 @@ meta_key_event_new_from_evdev (ClutterInputDevice *device,
@@ -61,5 +61,5 @@ index 1ec12a37bea..7f80cca2e2a 100644
    modifiers = xkb_state_serialize_mods (xkb_state, XKB_STATE_MODS_EFFECTIVE) |
      button_state;
 -- 
-GitLab
+2.41.0
 

@@ -12,6 +12,10 @@
 
 %global tarball_version %%(echo %{version} | tr '~' '.')
 
+%undefine _hardened_build
+%undefine _include_frame_pointers
+%global toolchain clang
+
 Name:          mutter
 Version:       45.0
 Release:       %autorelease
@@ -21,36 +25,21 @@ License:       GPLv2+
 URL:           http://www.gnome.org
 Source0:       http://download.gnome.org/sources/%{name}/45/%{name}-%{tarball_version}.tar.xz
 
-# Work-around for OpenJDK's compliance test
-Patch:         0001-window-actor-Special-case-shaped-Java-windows.patch
+Patch: /home/kazuki/mutter-fed/0001-Support-Dynamic-triple-double-buffering.patch
+Patch: /home/kazuki/mutter-fed/0002-window-Don-t-unqueue-move-resize-changes-on-wayland-.patch
+Patch: /home/kazuki/mutter-fed/0003-gschema-Enable-scale-monitor-framebuffer-experimenta.patch
+Patch: /home/kazuki/mutter-fed/0004-place-Always-center-initial-setup-fedora-welcome.patch
+Patch: /home/kazuki/mutter-fed/0005-Revert-x11-Use-input-region-from-frame-window-for-de.patch
+Patch: /home/kazuki/mutter-fed/0006-thread-For-consistency-s-real_time-realtime.patch
+Patch: /home/kazuki/mutter-fed/0007-window-actor-Special-case-shaped-Java-windows.patch
+Patch: /home/kazuki/mutter-fed/0008-tests-dbusmock-templates-rtkit-Add-MakeThreadHighPri.patch
+Patch: /home/kazuki/mutter-fed/0009-thread-Allow-turning-off-rt-scheduling-for-running-t.patch
+Patch: /home/kazuki/mutter-fed/0010-kms-impl-device-Inhibit-real-time-scheduling-when-mo.patch
+Patch: /home/kazuki/mutter-fed/0011-monitor-config-store-Discard-config-with-fractional-.patch
+Patch: /home/kazuki/mutter-fed/0012-backends-native-Translate-keycodes-with-xkb_key_stat.patch
+Patch: /home/kazuki/mutter-fed/0013-Disable-KMS-on-tegra.patch
 
-# https://bugzilla.redhat.com/show_bug.cgi?id=1936991
-Patch:         mutter-42.alpha-disable-tegra.patch
-
-# https://pagure.io/fedora-workstation/issue/79
-Patch:         0001-place-Always-center-initial-setup-fedora-welcome.patch
-
-Patch:         0001-gschema-Enable-scale-monitor-framebuffer-experimenta.patch
-
-# https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/3299
-Patch:         3299.patch
-
-# https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/3306
-Patch:         3306.patch
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=2239128
-# https://gitlab.gnome.org/GNOME/mutter/-/issues/3068
-# not upstreamed because for upstream we'd really want to find a way
-# to fix *both* problems
-Patch:         0001-Revert-x11-Use-input-region-from-frame-window-for-de.patch
-
-# https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/3324
-Patch: 0001-thread-For-consistency-s-real_time-realtime.patch
-Patch: 0002-tests-dbusmock-templates-rtkit-Add-MakeThreadHighPri.patch
-Patch: 0003-thread-Allow-turning-off-rt-scheduling-for-running-t.patch
-Patch: 0004-kms-impl-device-Inhibit-real-time-scheduling-when-mo.patch
-
-
+BuildRequires: clang compiler-rt
 BuildRequires: pkgconfig(gobject-introspection-1.0) >= 1.41.0
 BuildRequires: pkgconfig(sm)
 BuildRequires: pkgconfig(libwacom)
@@ -178,6 +167,7 @@ the functionality of the installed %{name} package.
 %autosetup -S git -n %{name}-%{tarball_version}
 
 %build
+CFLAGS+="-mcpu=apple-m1"
 %meson -Degl_device=true -Dwayland_eglstream=true
 %meson_build
 

@@ -1,8 +1,8 @@
-From 4a82121b6c90df48b474bce31ca16e15f55368dc Mon Sep 17 00:00:00 2001
+From 5b2509569380ef2d1f48381599fe4ccc71bd16eb Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20=C3=85dahl?= <jadahl@gmail.com>
 Date: Mon, 4 Sep 2023 10:22:49 +0200
-Subject: [PATCH] gschema: Enable 'scale-monitor-framebuffer' experimental
- feature
+Subject: [PATCH 03/13] gschema: Enable 'scale-monitor-framebuffer'
+ experimental feature
 
 Enabling this by default was the consensus in a previous meeting[1].
 
@@ -12,7 +12,7 @@ Enabling this by default was the consensus in a previous meeting[1].
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/data/org.gnome.mutter.gschema.xml.in b/data/org.gnome.mutter.gschema.xml.in
-index 5d56ae2d37..8052032c51 100644
+index 5d56ae2d3..8052032c5 100644
 --- a/data/org.gnome.mutter.gschema.xml.in
 +++ b/data/org.gnome.mutter.gschema.xml.in
 @@ -103,7 +103,7 @@

@@ -1,0 +1,46 @@
+From 0e423fd26b59da5a2e9d115161c1e1c4620c65ec Mon Sep 17 00:00:00 2001
+From: Andrew de los Reyes <adlr@rivosinc.com>
+Date: Sat, 29 Apr 2023 20:11:51 -0700
+Subject: [PATCH 02/13] window: Don't unqueue move-resize changes on wayland
+ configuration ACKs
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+meta_window_wayland_finish_move_resize() may end up being called when a
+resize was queued already, in such case we need to perform it promptly
+or we'd loose changes that have been requested already.
+
+When repeating multiple times the strut-monitor-changes test this code
+was hit consistently, and this change fixes it too.
+
+Co-Authored-By: Marco Trevisan (Treviño) <mail@3v1n0.net>
+
+Closes: GNOME/mutter#1627
+---
+ src/core/window.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/window.c b/src/core/window.c
+index f100a8bf3..073fd5f90 100644
+--- a/src/core/window.c
++++ b/src/core/window.c
+@@ -3822,8 +3822,13 @@ meta_window_move_resize_internal (MetaWindow          *window,
+ 
+   did_placement = !window->placed && window->calc_placement;
+ 
+-  /* We don't need it in the idle queue anymore. */
+-  meta_window_unqueue (window, META_QUEUE_MOVE_RESIZE);
++  /* We don't need it in the idle queue anymore, but we keep it in
++   * idle queue on ACKed configurations from Wayland clients, as the
++   * ACKed configuration may be more stale than the idle queued
++   * request.
++   */
++  if (!(flags & META_MOVE_RESIZE_WAYLAND_FINISH_MOVE_RESIZE))
++    meta_window_unqueue (window, META_QUEUE_MOVE_RESIZE);
+ 
+   if ((flags & META_MOVE_RESIZE_RESIZE_ACTION) && (flags & META_MOVE_RESIZE_MOVE_ACTION))
+     {
+-- 
+2.41.0
+

@@ -1,8 +1,8 @@
-From 0de15b2952e834c39298a4a415d0d30977a4a5b4 Mon Sep 17 00:00:00 2001
+From c02003ae3e14a0e028ad18ba1ea378ff8fa89370 Mon Sep 17 00:00:00 2001
 From: Adam Williamson <awilliam@redhat.com>
 Date: Thu, 5 Oct 2023 13:09:46 -0700
-Subject: [PATCH] Revert "x11: Use input region from frame window for decorated
- windows"
+Subject: [PATCH 05/13] Revert "x11: Use input region from frame window for
+ decorated windows"
 
 This reverts commit d991961ae2a5c8cf2e58ff1072239f4902b0f767. It
 seems to cause the broken mouse interaction bug reported in

@@ -1,0 +1,33 @@
+From eda3701fa788d4e8080b958098ed49d01902f8bc Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Wed, 11 Oct 2023 09:37:54 -0400
+Subject: [PATCH 08/13] tests/dbusmock-templates/rtkit: Add
+ MakeThreadHighPriority
+
+mutter will soon need to call an additional method in RTKit,
+MakeThreadHighPriority.
+
+In preparation for that, this commit stubs it out in the
+dbusmock template.
+---
+ src/tests/dbusmock-templates/rtkit.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/tests/dbusmock-templates/rtkit.py b/src/tests/dbusmock-templates/rtkit.py
+index 168582de8..766bd681e 100644
+--- a/src/tests/dbusmock-templates/rtkit.py
++++ b/src/tests/dbusmock-templates/rtkit.py
+@@ -26,6 +26,10 @@ def load(mock, parameters):
+ def MakeThreadRealtime(self, thread, priority):
+     self.priorities[thread] = priority
+ 
++@dbus.service.method(MAIN_IFACE, in_signature='tu')
++def MakeThreadHighPriority(self, thread, priority):
++    self.priorities[thread] = priority
++
+ @dbus.service.method(MOCK_IFACE)
+ def Reset(self):
+     self.priorities = dict()
+-- 
+2.41.0
+

@@ -1,8 +1,8 @@
-From 4008ed2f55d4621a4ed2230799c1ab2d012b3545 Mon Sep 17 00:00:00 2001
+From 195cb4510acd64db62e210541c6387ccc14207fb Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20=C3=85dahl?= <jadahl@gmail.com>
 Date: Wed, 27 Sep 2023 22:59:13 +0800
-Subject: [PATCH] monitor-config-store: Discard config with fractional scale
- when unusable
+Subject: [PATCH 11/13] monitor-config-store: Discard config with fractional
+ scale when unusable
 
 When a configuration has a fractional scale, but we're using a physical
 monitor layout, we can't use the scale, but if we do, we end up with
@@ -18,7 +18,7 @@ Closes: https://gitlab.gnome.org/GNOME/mutter/-/issues/3057
  1 file changed, 11 insertions(+), 2 deletions(-)
 
 diff --git a/src/backends/meta-monitor-config-store.c b/src/backends/meta-monitor-config-store.c
-index fe9406fd3f7..53a32cd2aaf 100644
+index fe9406fd3..53a32cd2a 100644
 --- a/src/backends/meta-monitor-config-store.c
 +++ b/src/backends/meta-monitor-config-store.c
 @@ -653,6 +653,7 @@ derive_logical_monitor_layout (MetaLogicalMonitorConfig    *logical_monitor_conf
@@ -54,5 +54,5 @@ index fe9406fd3f7..53a32cd2aaf 100644
      }
  
 -- 
-GitLab
+2.41.0
 

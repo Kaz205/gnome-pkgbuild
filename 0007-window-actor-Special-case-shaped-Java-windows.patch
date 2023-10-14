@@ -1,7 +1,7 @@
-From 9efcc35102b4c41265e93461b35a1193b3d5822d Mon Sep 17 00:00:00 2001
+From 629cb24b6a66fe88b68a2f7c12cd7d26b050178c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
 Date: Fri, 12 May 2017 13:40:31 +0200
-Subject: [PATCH] window-actor: Special-case shaped Java windows
+Subject: [PATCH 07/13] window-actor: Special-case shaped Java windows
 
 OpenJDK wrongly assumes that shaping a window implies no shadows.
 They got lucky until commit b975676c changed the fallback case,
@@ -12,10 +12,10 @@ by special-casing shaped Java windows.
  1 file changed, 8 insertions(+)
 
 diff --git a/src/compositor/meta-window-actor-x11.c b/src/compositor/meta-window-actor-x11.c
-index b7032e0ba..b05d5e158 100644
+index 70c5fa642..d43e2b9ad 100644
 --- a/src/compositor/meta-window-actor-x11.c
 +++ b/src/compositor/meta-window-actor-x11.c
-@@ -528,6 +528,14 @@ has_shadow (MetaWindowActorX11 *actor_x11)
+@@ -426,6 +426,14 @@ has_shadow (MetaWindowActorX11 *actor_x11)
     */
    if (window->has_custom_frame_extents)
      return FALSE;
@@ -31,5 +31,5 @@ index b7032e0ba..b05d5e158 100644
    /*
     * Generate shadows for all other windows.
 -- 
-2.23.0
+2.41.0
 

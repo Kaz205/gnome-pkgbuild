@@ -1,7 +1,7 @@
-From a7c0f106b30137e1fc6159eaecee8e61b8dc48a9 Mon Sep 17 00:00:00 2001
+From 6aa92c2ae59fb7c00bb1fcd4e4a798e3228b958f Mon Sep 17 00:00:00 2001
 From: Ray Strode <rstrode@redhat.com>
 Date: Tue, 10 Oct 2023 14:39:13 -0400
-Subject: [PATCH 3/4] thread: Allow turning off rt scheduling for running
+Subject: [PATCH 09/13] thread: Allow turning off rt scheduling for running
  thread
 
 At the moment if a thread is made real-time there's no going back,
@@ -29,34 +29,7 @@ diff --git a/src/backends/native/meta-thread.c b/src/backends/native/meta-thread
 index 93a84a8a5..1ed30441d 100644
 --- a/src/backends/native/meta-thread.c
 +++ b/src/backends/native/meta-thread.c
-@@ -56,62 +56,66 @@ typedef struct _MetaThreadCallbackSource
- 
-   GMutex mutex;
-   GCond cond;
- 
-   MetaThread *thread;
-   GMainContext *main_context;
-   GList *callbacks;
-   gboolean needs_flush;
- } MetaThreadCallbackSource;
- 
- typedef struct _MetaThreadPrivate
- {
-   MetaBackend *backend;
-   char *name;
- 
-   GMainContext *main_context;
- 
-   MetaThreadImpl *impl;
-   gboolean wants_realtime;
-   gboolean waiting_for_impl_task;
-   GSource *wrapper_source;
- 
-   GMutex callbacks_mutex;
-   GHashTable *callback_sources;
- 
-   MetaThreadType thread_type;
- 
+@@ -83,8 +83,12 @@ typedef struct _MetaThreadPrivate
    GThread *main_thread;
  
    struct {
@@ -69,61 +42,7 @@ index 93a84a8a5..1ed30441d 100644
    } kernel;
  } MetaThreadPrivate;
  
- typedef struct _MetaThreadClassPrivate
- {
-   GType impl_type;
- } MetaThreadClassPrivate;
- 
- static void initable_iface_init (GInitableIface *initable_iface);
- 
- G_DEFINE_TYPE_WITH_CODE (MetaThread, meta_thread, G_TYPE_OBJECT,
-                          G_ADD_PRIVATE (MetaThread)
-                          G_IMPLEMENT_INTERFACE (G_TYPE_INITABLE,
-                                                 initable_iface_init)
-                          g_type_add_class_private (g_define_type_id,
-                                                    sizeof (MetaThreadClassPrivate)))
- 
- static void
- meta_thread_callback_data_free (MetaThreadCallbackData *callback_data)
- {
-   if (callback_data->user_data_destroy)
-     callback_data->user_data_destroy (callback_data->user_data);
-   g_free (callback_data);
- }
- 
- static void
- meta_thread_get_property (GObject    *object,
-                           guint       prop_id,
-                           GValue     *value,
-                           GParamSpec *pspec)
-@@ -175,181 +179,278 @@ get_rtkit_property (MetaDBusRealtimeKit1  *rtkit_proxy,
- {
-   GDBusConnection *connection;
-   g_autoptr (GVariant) prop_value = NULL;
-   g_autoptr (GVariant) property_variant = NULL;
- 
-   /* The following is a fall back path for a RTKit daemon that doesn't support
-    * org.freedesktop.DBus.Properties.GetAll. See
-    * <https://github.com/heftig/rtkit/pull/30>.
-    */
-   connection = g_dbus_proxy_get_connection (G_DBUS_PROXY (rtkit_proxy));
-   prop_value =
-     g_dbus_connection_call_sync (connection,
-                                  "org.freedesktop.RealtimeKit1",
-                                  "/org/freedesktop/RealtimeKit1",
-                                  "org.freedesktop.DBus.Properties",
-                                  "Get",
-                                  g_variant_new ("(ss)",
-                                                 "org.freedesktop.RealtimeKit1",
-                                                 property_name),
-                                  G_VARIANT_TYPE ("(v)"),
-                                  G_DBUS_CALL_FLAGS_NO_AUTO_START,
-                                  -1, NULL, error);
-   if (!prop_value)
-     return NULL;
- 
-   g_variant_get (prop_value, "(v)", &property_variant);
-   return g_steal_pointer (&property_variant);
+@@ -202,15 +206,15 @@ get_rtkit_property (MetaDBusRealtimeKit1  *rtkit_proxy,
  }
  
  static gboolean
@@ -144,17 +63,7 @@ index 93a84a8a5..1ed30441d 100644
  
    rtkit_proxy =
      meta_dbus_realtime_kit1_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
-                                                     G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS |
-                                                     G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
-                                                     "org.freedesktop.RealtimeKit1",
-                                                     "/org/freedesktop/RealtimeKit1",
-                                                     NULL,
-                                                     &local_error);
-   if (!rtkit_proxy)
-     {
-       g_dbus_error_strip_remote_error (local_error);
-       g_propagate_prefixed_error (error, g_steal_pointer (&local_error),
-                                   "Failed to acquire RTKit D-Bus proxy: ");
+@@ -228,12 +232,29 @@ request_realtime_scheduling (MetaThread  *thread,
        return FALSE;
      }
  
@@ -186,11 +95,7 @@ index 93a84a8a5..1ed30441d 100644
                                               "MaxRealtimePriority",
                                               error);
        if (!priority_variant)
-         return FALSE;
- 
-       priority = g_variant_get_int32 (priority_variant);
-     }
- 
+@@ -245,12 +266,12 @@ request_realtime_scheduling (MetaThread  *thread,
    if (priority == 0)
      g_warning ("Maximum real time scheduling priority is 0");
  
@@ -205,22 +110,7 @@ index 93a84a8a5..1ed30441d 100644
                                             "RTTimeUSecMax",
                                             error);
        if (!rttime_variant)
-         return FALSE;
- 
-       rttime = g_variant_get_int64 (rttime_variant);
-     }
- 
-   meta_topic (META_DEBUG_BACKEND,
-               "Setting soft and hard RLIMIT_RTTIME limit to %lu", rttime);
-   rl.rlim_cur = rttime;
-   rl.rlim_max = rttime;
- 
-   if (setrlimit (RLIMIT_RTTIME, &rl) != 0)
-     {
-       g_set_error (error, G_IO_ERROR, g_io_error_from_errno (errno),
-                    "Failed to set RLIMIT_RTTIME: %s", g_strerror (errno));
-       return FALSE;
-     }
+@@ -273,8 +294,8 @@ request_realtime_scheduling (MetaThread  *thread,
  
    meta_topic (META_DEBUG_BACKEND, "Setting '%s' thread real time priority to %d",
                priv->name, priority);
@@ -231,12 +121,7 @@ index 93a84a8a5..1ed30441d 100644
                                                                 priority,
                                                                 NULL,
                                                                 &local_error))
-     {
-       g_dbus_error_strip_remote_error (local_error);
-       g_propagate_error (error, g_steal_pointer (&local_error));
-       return FALSE;
-     }
- 
+@@ -287,6 +308,90 @@ request_realtime_scheduling (MetaThread  *thread,
    return TRUE;
  }
  
@@ -327,22 +212,7 @@ index 93a84a8a5..1ed30441d 100644
  static gpointer
  thread_impl_func (gpointer user_data)
  {
-   MetaThread *thread = META_THREAD (user_data);
-   MetaThreadPrivate *priv = meta_thread_get_instance_private (thread);
-   MetaThreadImpl *impl = priv->impl;
-   MetaThreadImplRunFlags run_flags = META_THREAD_IMPL_RUN_FLAG_NONE;
-   GMainContext *thread_context = meta_thread_impl_get_main_context (impl);
- #ifdef HAVE_PROFILER
-   MetaContext *context = meta_backend_get_context (priv->backend);
-   MetaProfiler *profiler = meta_context_get_profiler (context);
- #endif
- 
-   g_mutex_lock (&priv->kernel.init_mutex);
-   g_mutex_unlock (&priv->kernel.init_mutex);
- 
-   g_main_context_push_thread_default (thread_context);
- 
- #ifdef HAVE_PROFILER
+@@ -309,20 +414,16 @@ thread_impl_func (gpointer user_data)
    meta_profiler_register_thread (profiler, thread_context, priv->name);
  #endif
  
@@ -372,61 +242,7 @@ index 93a84a8a5..1ed30441d 100644
      }
  
    meta_thread_impl_run (impl, run_flags);
- 
- #ifdef HAVE_PROFILER
-   meta_profiler_unregister_thread (profiler, thread_context);
- #endif
- 
-   g_main_context_pop_thread_default (thread_context);
- 
-   return GINT_TO_POINTER (TRUE);
- }
- 
- typedef struct _WrapperSource
- {
-   GSource base;
- 
-   GMainContext *thread_main_context;
- 
-   GPollFD fds[256];
-   gpointer fd_tags[256];
-   int n_fds;
-   int priority;
- } WrapperSource;
- 
- static gboolean
- wrapper_source_prepare (GSource *source,
-                         int     *timeout)
- {
-   WrapperSource *wrapper_source = (WrapperSource *) source;
-@@ -522,60 +623,64 @@ meta_thread_initable_init (GInitable     *initable,
- 
-   start_thread (thread);
- 
-   return TRUE;
- }
- 
- static void
- initable_iface_init (GInitableIface *initable_iface)
- {
-   initable_iface->init = meta_thread_initable_init;
- }
- 
- static void
- finalize_thread_user (MetaThread *thread)
- {
-   MetaThreadPrivate *priv = meta_thread_get_instance_private (thread);
- 
-   meta_thread_impl_terminate (priv->impl);
-   while (meta_thread_impl_dispatch (priv->impl) > 0);
-   unwrap_main_context (thread, meta_thread_impl_get_main_context (priv->impl));
- }
- 
- static void
- finalize_thread_kernel (MetaThread *thread)
- {
-   MetaThreadPrivate *priv = meta_thread_get_instance_private (thread);
- 
+@@ -549,6 +650,10 @@ finalize_thread_kernel (MetaThread *thread)
    meta_thread_impl_terminate (priv->impl);
    g_thread_join (priv->kernel.thread);
    priv->kernel.thread = NULL;
@@ -437,61 +253,7 @@ index 93a84a8a5..1ed30441d 100644
    g_mutex_clear (&priv->kernel.init_mutex);
  }
  
- static void
- tear_down_thread (MetaThread *thread)
- {
-   MetaThreadPrivate *priv = meta_thread_get_instance_private (thread);
- 
-   switch (priv->thread_type)
-     {
-     case META_THREAD_TYPE_USER:
-       finalize_thread_user (thread);
-       break;
-     case META_THREAD_TYPE_KERNEL:
-       finalize_thread_kernel (thread);
-       break;
-     }
- 
-   meta_thread_flush_callbacks (thread);
- }
- 
- static void
- meta_thread_finalize (GObject *object)
- {
-   MetaThread *thread = META_THREAD (object);
-   MetaThreadPrivate *priv = meta_thread_get_instance_private (thread);
- 
-   tear_down_thread (thread);
- 
-   meta_thread_unregister_callback_context (thread, priv->main_context);
-@@ -1134,30 +1239,66 @@ meta_thread_get_thread_type (MetaThread *thread)
-   MetaThreadPrivate *priv = meta_thread_get_instance_private (thread);
- 
-   return priv->thread_type;
- }
- 
- GThread *
- meta_thread_get_thread (MetaThread *thread)
- {
-   MetaThreadPrivate *priv = meta_thread_get_instance_private (thread);
- 
-   g_assert (priv->thread_type == META_THREAD_TYPE_KERNEL);
- 
-   return priv->kernel.thread;
- }
- 
- gboolean
- meta_thread_is_in_impl_task (MetaThread *thread)
- {
-   MetaThreadPrivate *priv = meta_thread_get_instance_private (thread);
- 
-   return meta_thread_impl_is_in_impl (priv->impl);
- }
- 
- gboolean
- meta_thread_is_waiting_for_impl_task (MetaThread *thread)
- {
-   MetaThreadPrivate *priv = meta_thread_get_instance_private (thread);
+@@ -1161,3 +1266,39 @@ meta_thread_is_waiting_for_impl_task (MetaThread *thread)
  
    return priv->waiting_for_impl_task;
  }
@@ -535,34 +297,7 @@ diff --git a/src/backends/native/meta-thread.h b/src/backends/native/meta-thread
 index f6c5c94f5..4765719ec 100644
 --- a/src/backends/native/meta-thread.h
 +++ b/src/backends/native/meta-thread.h
-@@ -71,36 +71,39 @@ void meta_thread_queue_callback (MetaThread         *thread,
-                                  GDestroyNotify      user_data_destroy);
- 
- META_EXPORT_TEST
- void meta_thread_flush_callbacks (MetaThread *thread);
- 
- META_EXPORT_TEST
- gpointer meta_thread_run_impl_task_sync (MetaThread          *thread,
-                                          MetaThreadTaskFunc   func,
-                                          gpointer             user_data,
-                                          GError             **error);
- 
- META_EXPORT_TEST
- void meta_thread_post_impl_task (MetaThread                 *thread,
-                                  MetaThreadTaskFunc          func,
-                                  gpointer                    user_data,
-                                  GDestroyNotify              user_data_destroy,
-                                  MetaThreadTaskFeedbackFunc  feedback_func,
-                                  gpointer                    feedback_user_data);
- 
- META_EXPORT_TEST
- MetaBackend * meta_thread_get_backend (MetaThread *thread);
- 
- META_EXPORT_TEST
- const char * meta_thread_get_name (MetaThread *thread);
- 
- META_EXPORT_TEST
- gboolean meta_thread_is_in_impl_task (MetaThread *thread);
+@@ -98,6 +98,9 @@ gboolean meta_thread_is_in_impl_task (MetaThread *thread);
  
  gboolean meta_thread_is_waiting_for_impl_task (MetaThread *thread);
  
@@ -572,9 +307,6 @@ index f6c5c94f5..4765719ec 100644
  #define meta_assert_in_thread_impl(thread) \
    g_assert (meta_thread_is_in_impl_task (thread))
  #define meta_assert_not_in_thread_impl(thread) \
-   g_assert (!meta_thread_is_in_impl_task (thread))
- #define meta_assert_is_waiting_for_thread_impl_task(thread) \
-   g_assert (meta_thread_is_waiting_for_impl_task (thread))
 -- 
 2.41.0
 
