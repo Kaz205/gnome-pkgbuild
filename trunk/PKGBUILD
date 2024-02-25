@@ -6,12 +6,12 @@ pkgbase=mutter
 pkgname=(
   mutter
 )
-pkgver=44.2
+pkgver=45.4
 pkgrel=1
 pkgdesc="Window manager and compositor for GNOME"
 url="https://gitlab.gnome.org/GNOME/mutter"
-arch=(aarch64 x86_64)
-license=(GPL)
+arch=(x86_64)
+license=(GPL-2.0-or-later)
 depends=(
   colord
   dconf
@@ -19,8 +19,11 @@ depends=(
   gnome-settings-daemon
   graphene
   gsettings-desktop-schemas
+  iio-sensor-proxy
   lcms2
   libcanberra
+  libdisplay-info
+  libei
   libgudev
   libinput
   libsm
@@ -43,11 +46,12 @@ makedepends=(
   xorg-server-xvfb
 )
 checkdepends=(
+  gnome-session
   python-dbusmock
   wireplumber
   zenity
 )
-source=("git+https://github.com/Kaz205/mutter.git#branch=gnome-44")
+source=("git+https://github.com/Kaz205/mutter.git#branch=gnome-45")
 b2sums=('SKIP')
 
 prepare() {
@@ -58,6 +62,7 @@ build() {
   local meson_options=(
     -D egl_device=true
     -D installed_tests=false
+    -D libdisplay_info=true
     -D wayland_eglstream=true
     -D profiler=false
     -D tests=false
@@ -72,7 +77,7 @@ build() {
 }
 
 package_mutter() {
-  provides=(libmutter-12.so)
+  provides=(libmutter-13.so)
 
   meson install -C build --destdir "$pkgdir"
 }
