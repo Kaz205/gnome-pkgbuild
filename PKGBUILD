@@ -53,6 +53,7 @@ checkdepends=(
 )
 source=("git+https://github.com/Kaz205/mutter.git#branch=gnome-45")
 b2sums=('SKIP')
+options=('lto')
 
 prepare() {
   cd mutter
