@@ -99,7 +99,6 @@ struct _MetaRendererNative
 
   GList *detached_onscreens;
   GList *lingering_onscreens;
-  GList *disabled_crtcs;
   guint release_unused_gpus_idle_id;
 
   GList *power_save_page_flip_onscreens;
@@ -684,9 +683,6 @@ configure_disabled_crtcs (MetaKmsDevice      *kms_device,
 
       kms_update = ensure_mode_set_update (renderer_native, kms_device);
       meta_kms_update_mode_set (kms_update, kms_crtc, NULL, NULL);
-
-      renderer_native->disabled_crtcs =
-        g_list_prepend (renderer_native->disabled_crtcs, kms_crtc);
     }
 }
 
@@ -694,18 +690,12 @@ static gboolean
 dummy_power_save_page_flip_cb (gpointer user_data)
 {
   MetaRendererNative *renderer_native = user_data;
-  GList *old_list =
-    g_steal_pointer (&renderer_native->power_save_page_flip_onscreens);
 
-  g_list_foreach (old_list,
+  g_list_foreach (renderer_native->power_save_page_flip_onscreens,
                   (GFunc) meta_onscreen_native_dummy_power_save_page_flip,
                   NULL);
-  g_clear_list (&old_list,
+  g_clear_list (&renderer_native->power_save_page_flip_onscreens,
                 g_object_unref);
-
-  if (renderer_native->power_save_page_flip_onscreens != NULL)
-    return G_SOURCE_CONTINUE;
-
   renderer_native->power_save_page_flip_source_id = 0;
 
   return G_SOURCE_REMOVE;
@@ -716,9 +706,6 @@ meta_renderer_native_queue_power_save_page_flip (MetaRendererNative *renderer_na
                                                  CoglOnscreen       *onscreen)
 {
   const unsigned int timeout_ms = 100;
-
-  if (g_list_find (renderer_native->power_save_page_flip_onscreens, onscreen))
-    return;
 
   if (!renderer_native->power_save_page_flip_source_id)
     {
@@ -831,22 +818,6 @@ clear_detached_onscreens (MetaRendererNative *renderer_native)
 }
 
 static void
-clear_disabled_crtcs (MetaRendererNative *renderer_native)
-{
-  GList *l;
-
-  for (l = renderer_native->disabled_crtcs; l; l = l->next)
-    {
-      MetaKmsCrtc *kms_crtc = l->data;
-      MetaSwapChain *swap_chain = meta_kms_crtc_get_swap_chain (kms_crtc);
-
-      meta_swap_chain_release_buffers (swap_chain);
-    }
-
-  g_clear_list (&renderer_native->disabled_crtcs, NULL);
-}
-
-static void
 mode_sets_update_result_feedback (const MetaKmsFeedback *kms_feedback,
                                   gpointer               user_data)
 {
@@ -907,7 +878,6 @@ meta_renderer_native_post_mode_set_updates (MetaRendererNative *renderer_native)
   post_mode_set_updates (renderer_native);
 
   clear_detached_onscreens (renderer_native);
-  clear_disabled_crtcs (renderer_native);
 
   meta_kms_notify_modes_set (kms);
 
@@ -1498,26 +1468,6 @@ detach_onscreens (MetaRenderer *renderer)
 }
 
 static void
-discard_pending_swaps (MetaRenderer *renderer)
-{
-  GList *views = meta_renderer_get_views (renderer);;
-  GList *l;
-
-  for (l = views; l; l = l->next)
-    {
-      ClutterStageView *stage_view = l->data;
-      CoglFramebuffer *fb = clutter_stage_view_get_onscreen (stage_view);
-      CoglOnscreen *onscreen;
-
-      if (!COGL_IS_ONSCREEN (fb))
-        continue;
-
-      onscreen = COGL_ONSCREEN (fb);
-      meta_onscreen_native_discard_pending_swaps (onscreen);
-    }
-}
-
-static void
 meta_renderer_native_rebuild_views (MetaRenderer *renderer)
 {
   MetaRendererNative *renderer_native = META_RENDERER_NATIVE (renderer);
@@ -1527,7 +1477,6 @@ meta_renderer_native_rebuild_views (MetaRenderer *renderer)
   MetaRendererClass *parent_renderer_class =
     META_RENDERER_CLASS (meta_renderer_native_parent_class);
 
-  discard_pending_swaps (renderer);
   meta_kms_discard_pending_page_flips (kms);
   g_hash_table_remove_all (renderer_native->mode_set_updates);
 
@@ -2290,7 +2239,6 @@ meta_renderer_native_finalize (GObject *object)
   g_clear_handle_id (&renderer_native->release_unused_gpus_idle_id,
                      g_source_remove);
   clear_detached_onscreens (renderer_native);
-  clear_disabled_crtcs (renderer_native);
 
   g_hash_table_destroy (renderer_native->gpu_datas);
   g_clear_object (&renderer_native->gles3);
