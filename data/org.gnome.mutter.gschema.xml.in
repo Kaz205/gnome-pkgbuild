@@ -5,7 +5,7 @@
     <value nick="kms-modifiers" value="2"/>
     <value nick="autoclose-xwayland" value="4"/>
     <value nick="variable-refresh-rate" value="8"/>
-    <value nick="xwayland-native-scaling" value="9"/>
+    <value nick="xwayland-native-scaling" value="16"/>
   </flags>
 
   <schema id="org.gnome.mutter" path="/org/gnome/mutter/"
