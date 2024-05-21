@@ -2572,8 +2572,13 @@ meta_window_x11_update_input_region (MetaWindow *window)
   else
     {
       xwindow = priv->xwindow;
-      bounding_rect.width = priv->client_rect.width;
-      bounding_rect.height = priv->client_rect.height;
+      meta_window_x11_stage_to_protocol(window_x11,
+                                        0, 0,
+                                        priv->client_rect.width,
+                                        priv->client_rect.height,
+                                        NULL, NULL,
+                                        &bounding_rect.width,
+                                        &bounding_rect.height);
     }
 
   if (META_X11_DISPLAY_HAS_SHAPE (x11_display))
