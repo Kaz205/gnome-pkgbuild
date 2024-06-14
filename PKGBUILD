@@ -71,20 +71,13 @@ depends=(
 )
 makedepends=(
   egl-wayland
+  gi-docgen
   git
   gobject-introspection
-  gtk3
   meson
+  python-packaging
   sysprof
   wayland-protocols
-  xorg-server
-  xorg-server-xvfb
-)
-checkdepends=(
-  gnome-session
-  python-dbusmock
-  wireplumber
-  zenity
 )
 source=("git+https://github.com/Kaz205/mutter.git#branch=gnome-46")
 b2sums=('SKIP')
