@@ -6,7 +6,7 @@ pkgbase=mutter
 pkgname=(
   mutter
 )
-pkgver=46.3.1
+pkgver=46.4
 pkgrel=1
 pkgdesc="Window manager and compositor for GNOME"
 url="https://gitlab.gnome.org/GNOME/mutter"
@@ -73,9 +73,9 @@ makedepends=(
   egl-wayland
   gi-docgen
   git
+  glib2-devel
   gobject-introspection
   meson
-  python-packaging
   sysprof
   wayland-protocols
 )
