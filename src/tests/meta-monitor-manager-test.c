@@ -517,6 +517,12 @@ meta_crtc_test_set_gamma_lut (MetaCrtc           *crtc,
                                      sizeof (uint16_t) * lut->size);
 }
 
+static int64_t
+meta_crtc_test_get_deadline_evasion (MetaCrtcNative *crtc_native)
+{
+  return 0;
+}
+
 static void
 meta_crtc_test_finalize (GObject *object)
 {
